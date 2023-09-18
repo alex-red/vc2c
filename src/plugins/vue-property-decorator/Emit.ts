@@ -9,15 +9,14 @@ const hyphenateRE = /\B([A-Z])/g
 const hyphenate = (str: string) => str.replace(hyphenateRE, '-$1').toLowerCase()
 
 export const convertEmitMethod: ASTConverter<ts.MethodDeclaration> = (node, options) => {
-
-  const tsModule = options.typescript;
-  const factory = tsModule.factory;
-  const decorator = getDecorator(tsModule, node, emitDecoratorName);
+  const tsModule = options.typescript
+  const factory = tsModule.factory
+  const decorator = getDecorator(tsModule, node, emitDecoratorName)
   if (decorator) {
     const methodName = node.name.getText()
 
     const decoratorArguments = (decorator.expression as ts.CallExpression).arguments
-    const eventName = decoratorArguments.length > 0 && tsModule.isStringLiteral(decoratorArguments[0]) ? (decoratorArguments[0] as ts.StringLiteral).text : undefined
+    const eventName = decoratorArguments.length > 0 && tsModule.isStringLiteral(decoratorArguments[0]) ? (decoratorArguments[0]).text : undefined
 
     const createEmit = (event: string, expressions: ts.Expression[]) => factory.createExpressionStatement(factory.createCallExpression(
       factory.createPropertyAccessExpression(
@@ -44,7 +43,7 @@ export const convertEmitMethod: ASTConverter<ts.MethodDeclaration> = (node, opti
           return tsModule.visitEachChild(node, deepVisitor, context)
         }
 
-        return (node) => tsModule.visitNode(node, deepVisitor)
+        return (node) => tsModule.visitNode(node, deepVisitor) as ts.Statement
       }
     }
 

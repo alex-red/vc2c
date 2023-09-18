@@ -9,19 +9,19 @@ import * as BuiltInPlugins from './plugins/builtIn'
 import { ConvertResult } from './plugins/types'
 import { decodeEmptyLines, encodeEmptyLines } from './utils'
 
-export function convert (content: string, inputOptions: InputVc2cOptions): ConvertResult {
-  const options = mergeVc2cOptions(getDefaultVc2cOptions(inputOptions.typescript), inputOptions);
+export async function convert (content: string, inputOptions: InputVc2cOptions): Promise<ConvertResult> {
+  const options = mergeVc2cOptions(getDefaultVc2cOptions(inputOptions.typescript), inputOptions)
   const { ast, program } = getSingleFileProgram(encodeEmptyLines(content), options)
 
-  const convResult = convertAST(ast, options, program);
+  const convResult = convertAST(ast, options, program)
   if (convResult.success) {
-    convResult.convertedContent = format(decodeEmptyLines(convResult.convertedContent), options);
+    convResult.convertedContent = await format(decodeEmptyLines(convResult.convertedContent), options)
   }
 
-  return convResult;
+  return convResult
 }
 
-export function convertFile (filePath: string, root: string, config: string): { file: FileInfo, result: ConvertResult } {
+export async function convertFile (filePath: string, root: string, config: string): Promise<{ file: FileInfo, result: ConvertResult }> {
   root = (typeof root === 'string')
     ? (
       path.isAbsolute(root) ? root : path.resolve(process.cwd(), root)
@@ -45,7 +45,7 @@ export function convertFile (filePath: string, root: string, config: string): { 
   const file = readVueSFCOrTsFile(filePath, options)
   return {
     file,
-    result: convert(file.content, options)
+    result: await convert(file.content, options)
   }
 }
 

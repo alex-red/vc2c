@@ -3,14 +3,14 @@ import { Vc2cOptions } from './options'
 import path from 'path'
 import { log } from './debug'
 import prettier from 'prettier/standalone'
-import prettierTypescriptParser from 'prettier/parser-typescript'
+// import prettierTypescriptParser from 'prettier/plugins/typescript'
 import { existsFileSync } from './file'
 
-export function format (content: string, options: Vc2cOptions): string {
+export async function format (content: string, options: Vc2cOptions): Promise<string> {
   const isNode = typeof window === 'undefined'
   if (!isNode) {
-    return prettier.format(content, {
-      plugins: [prettierTypescriptParser],
+    return await prettier.format(content, {
+      plugins: ['typescript'],
       parser: 'typescript',
       semi: false,
       singleQuote: true
@@ -18,7 +18,7 @@ export function format (content: string, options: Vc2cOptions): string {
   }
 
   const eslintConfigPath = path.resolve(options.root, options.eslintConfigFile)
-  const prettierFormat = require('prettier-eslint') as (config: unknown) => string
+  const prettierFormat = require('@timdp/prettier-eslint') as (config: unknown) => string
   const prettierEslintOpions = (existsFileSync(eslintConfigPath))
     ? {
       text: content,
@@ -32,7 +32,7 @@ export function format (content: string, options: Vc2cOptions): string {
     }
     : {
       text: content,
-      filePath: '',
+      filePath: undefined,
       eslintConfig: {
         parser: require.resolve('@typescript-eslint/parser'),
         parserOptions: {
@@ -66,5 +66,6 @@ export function format (content: string, options: Vc2cOptions): string {
     }
 
   log('Format result code.....')
+
   return prettierFormat(prettierEslintOpions)
 }

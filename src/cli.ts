@@ -36,23 +36,29 @@ program
     const cmdOptions = getCmdOptions(cmd)
     const targetFiles = glob.sync(filePath)
 
-    targetFiles.forEach((targetFile) => {
-      const { file, result } = convertFile(targetFile, cmdOptions.root as string, cmdOptions.config as string)
+    const promises = []
+    for (const targetFile of targetFiles) {
+      const promise = (async () => {
+        const { file, result } = await convertFile(targetFile, cmdOptions.root as string, cmdOptions.config as string)
 
-      if (!result.success) {
-        console.log("Skipping file: " + targetFile);
-        console.log(result.error);
-        return;
-      }
+        if (!result.success) {
+          console.log('Skipping file: ' + targetFile)
+          console.log(result.error)
+          return
+        }
 
-      if (cmdOptions.view) {
-        console.log(result.convertedContent)
-        return
-      }
+        if (cmdOptions.view) {
+          console.log(result.convertedContent)
+          return
+        }
 
-      writeFileInfo(file, result.convertedContent)
-      console.log('Please check the TODO comments on result.')
-    })
+        writeFileInfo(file, result.convertedContent)
+        console.log('Please check the TODO comments on result.')
+      })()
+      promises.push(promise)
+    }
+
+    await Promise.all(promises)
   })
 
 program.parse(process.argv)
